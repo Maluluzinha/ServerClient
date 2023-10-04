@@ -3,7 +3,7 @@
 #define BUFSZ 1024
 
 void usage(int argc, char **argv){ //Função em caso de erro na chamada
-    printf("Usage %s <server_ip> <server_port>");
+    printf("Usage %s <server_ip> <server_port>", argv[0]);
     //%s recebe dados de uma string fornecida
     printf("Ex: %s 127.0.0.1 51511");
     exit(EXIT_FAILURE); //Corresponde a um bool = 1; Falha
@@ -20,18 +20,27 @@ int main(int argc, char **argv){
       usage(argc, **argv);    //Ver se os parâmetros tão ok
     }
     //Lembrar: socket é uma função int -> int socket(int domain, int type, int protocol);
+
+    struct sockaddr_storage storage; //Instanciavel
+     if(0 != addrparse(argv[1], argv[2], &storage)){ //Endereço do server, o port, e o ponteiro pro storage. ERRO
+        usage(argc, argv);
+    }
+    
     int s;
-    s = socket(AF_INET, SOCK_STREAM, 0);
+    s = socket(storage.ss_family, SOCK_STREAM, 0);
     if(s = -1){ //Primeira verificação de erro
-        logexit("Socket /n");
+        logexit("Socket \n");
     }
 
-    if(0 != connect(s, addr, sizeof(addr))){ //Função que verifica a conexão. Se connect = 0, significa erro. Se !=, sem erro, ignora o if.
+    if(0 != connect(s, addr, sizeof(storage))){ //Função que verifica a conexão. Se connect = 0, significa erro. Se !=, sem erro, ignora o if.
+    //Cuidado ao passar o tamanho, deve ser o extao, por isso bota o storage direto
     //Variável addr é o endereço do servidor
     //No trabalho, provavelmente addr e o sizeof vão receber uma struct
-        logexit("Connect /n"); 
+        logexit("Connect \n"); 
     }
-
+   
+    struct sockaddr *addr = (struct sockaddr *)(&storage); //Inicializa com o ponteiro e faz um casting, joga um ponteiro no storage //Ponteiro da struct
+    //Sockaddr é abstrato, não é instancado diretamente
     char addrstring[BUFSZ];
     addrtostr(addr, addrstring, BUFSZ);
     printf("Connected succefully with %s", addrstring);
