@@ -22,7 +22,7 @@ int main(int argc, char **argv){
     }
 
     int s;
-    s = socket(storage.ss_family, SOCK_STREAM, 0);
+    s = socket(storage.ss_family, SOCK_STREAM, 0); //Socket que recebe a conexão
     if(s = -1){ //Primeira verificação de erro
         logexit("Socket \n");
     }
@@ -36,4 +36,40 @@ int main(int argc, char **argv){
     logexit("listen");
     }
 
+    char addrstr[BUFSZ];
+    addrtostr(addr, addrstr, BUFSZ);
+    printf("Bound to %s, waiting connections \n", addrstr);
+
+    //Servidor inicializado, agora chama o connect
+    while(1){
+        //Função accept retorna uma novo soquete. Recebe o socket, o socaddr do cliente que conectou
+    struct sockaddr_storage cstorage;
+    struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
+    socklen_t caddrlen = sizeof(cstorage);
+
+    int csock = accept(s, caddr, &caddrlen); //Socket q conversa com o cliente
+    if (csock == -1) { //Erro
+        logexit("Accept");
+        }
+
+    char caddrstr[BUFSZ]; //Endereço do cliente
+    addrtostr(addr, caddrstr, BUFSZ);
+    printf("[log] connection from %s\n", caddrstr);
+
+    //Agora para receber o dado/ler a mensagem que o cliente enviou
+    // Receiving message from client
+    char buf[BUFSZ];
+    memset(buf, 0, BUFSZ);
+    size_t count = recv(csock, buf, BUFSZ - 1, 0); //Mensagem que chega do cliente
+    printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf); //Print a mensagem do cliente
+    
+    sprintf(buf, "remote endpoint: %s \n", caddrstr);
+    send(csock, buf, strlen(buf)+1, 0); //Mand ao dado pro cliente
+    if(count != strlen(buf)+1){ //Erro envio
+       logexit("Send");
+    }
+    close(csock); //Fecha e volta pro inicio do loop
+
+    }
+    
 }

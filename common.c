@@ -58,17 +58,45 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize){
 
     } else if(addr->sa_family = AF_INET6){
         version = 6; //IPv6
-        struct sockaddr_in *addr6 = (struct sockaddr_in6 *)addr; //Muda o tipo do ponteiro
-        if(!inet_ntop(AF_INET6, &(addr6->sin_addr), addrstr,
+        struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr; //Muda o tipo do ponteiro
+        if(!inet_ntop(AF_INET6, &(addr6->sin6_addr), addrstr,
                         INET6_ADDRSTRLEN + 1)){                 //Network to Presentation
             logexit("Ntop"); //Deu erro
         }
-         port = ntohs(addr6->sin_port);
+         port = ntohs(addr6->sin6_port);
 
     } else {
             logexit("Unknow Protocol Family.");
     }
     if(str){
     snprintf(str, strsize, "IPv%d %s %hu", version, addrstr, port); //Printa o endereço
+    }
+}
+
+int server_sockaddr_init(const char *proto, const char *portstr,
+                         struct sockaddr_storage *storage) {
+  //Parse da port
+    uint16_t port = (u_int16_t)(portstr); //Unsigned short. 16bits, esta no padrão do protocolo TCP
+    if(port == 0){
+        return -1; //Passou port errada
+    }
+    port = htons(port); //O numero da port deve ser big endian.
+    memset(storage, 0, sizeof(*storage));
+    if (0 == strcmp(proto, "v4")) {
+        struct sockaddr_in *addr4 = (struct sockaddr_in *)storage;
+        addr4->sin_family = AF_INET;
+        addr4->sin_port = port;
+        addr4->sin_addr.s_addr = INADDR_ANY; //Esse muda, para aceitar qualquer endereço IP //CUIDADO
+        return (0);
+
+    } else if (0 == strcmp(proto, "v6")){
+        struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)storage;
+        addr6->sin6_family = AF_INET6;
+        addr6->sin6_port = port;
+        addr6->sin6_addr = in6addr_any;
+        return(0);
+
+    } else{
+        return -1;
     }
 }

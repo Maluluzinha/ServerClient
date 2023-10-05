@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <arpa/inet.h>
-
 void logexit(const char *msg);
 
 int addrparse(const char *addrstr, const char *portstr,
