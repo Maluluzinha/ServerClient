@@ -5,15 +5,15 @@
 void usage(int argc, char **argv){ //Função em caso de erro na chamada
     printf("Usage %s <server_ip> <server_port>", argv[0]);
     //%s recebe dados de uma string fornecida
-    printf("Ex: %s 127.0.0.1 51511");
+    printf("Ex: %s 127.0.0.1 51511", argv[0]);
     exit(EXIT_FAILURE); //Corresponde a um bool = 1; Falha
 
 }
 
-void logexit(const char *mensagem){ //Função de erro que imprime uma mensagem, a mensagem recebida em um ponteiro
-    perror(*mensagem);  //man perror
-    exit(EXIT_FAILURE);
-}
+//void logexit(const char *mensagem){ //Função de erro que imprime uma mensagem, a mensagem recebida em um ponteiro
+//    perror(*mensagem);  //man perror
+//    exit(EXIT_FAILURE);
+//}
 
 int main(int argc, char **argv){
     if (argc < 3){          //Verifica se chamou o programa corretamente, senão retorna pro usage() acima. Primeiro verificador de erro
@@ -32,6 +32,7 @@ int main(int argc, char **argv){
         logexit("Socket \n");
     }
 
+    struct sockaddr *addr = (struct sockaddr *)(&storage); //Inicializa com o ponteiro e faz um casting, joga um ponteiro no storage //Ponteiro da struct
     if(0 != connect(s, addr, sizeof(storage))){ //Função que verifica a conexão. Se connect = 0, significa erro. Se !=, sem erro, ignora o if.
     //Cuidado ao passar o tamanho, deve ser o extao, por isso bota o storage direto
     //Variável addr é o endereço do servidor
@@ -39,7 +40,6 @@ int main(int argc, char **argv){
         logexit("Connect \n"); 
     }
    
-    struct sockaddr *addr = (struct sockaddr *)(&storage); //Inicializa com o ponteiro e faz um casting, joga um ponteiro no storage //Ponteiro da struct
     //Sockaddr é abstrato, não é instancado diretamente
     char addrstring[BUFSZ];
     addrtostr(addr, addrstring, BUFSZ);

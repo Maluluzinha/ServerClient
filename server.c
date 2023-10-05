@@ -6,7 +6,7 @@
 
 void usage(int argc, char **argv){ //Função em caso de erro na chamada
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
-    printf("example: %s v4 51511\n");
+    printf("example: %s v4 51511\n", argv[0]);
     exit(EXIT_FAILURE);
 
 }
@@ -63,7 +63,7 @@ int main(int argc, char **argv){
     size_t count = recv(csock, buf, BUFSZ - 1, 0); //Mensagem que chega do cliente
     printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf); //Print a mensagem do cliente
     
-    sprintf(buf, "remote endpoint: %s \n", caddrstr);
+    sprintf(buf, "remote endpoint: %.1000s \n", caddrstr);
     send(csock, buf, strlen(buf)+1, 0); //Mand ao dado pro cliente
     if(count != strlen(buf)+1){ //Erro envio
        logexit("Send");

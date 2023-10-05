@@ -1,6 +1,11 @@
 #include "common.h"
 #include <arpa/inet.h>
 
+void logexit(const char *mensagem){ //Função de erro que imprime uma mensagem, a mensagem recebida em um ponteiro
+    perror(*mensagem);  //man perror
+    exit(EXIT_FAILURE);
+}
+
 int addrparse(const char *addrstr, const char *portstr,
               struct sockaddr_storage *storage) { //Assinatura?
         if(addrstr == NULL || portstr == NULL) {
@@ -45,7 +50,7 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize){
     char addrstr[INET6_ADDRSTRLEN + 1] = "";
     uint16_t port; //Para converter de novo p big endian
      
-    if(addr->sa_family = AF_INET){  //Verificar o tipo de protocolo, família
+    if(addr->sa_family == AF_INET){  //Verificar o tipo de protocolo, família
     
     //Dentro do if, fazer o parcing
         version = 4; //IPv4
@@ -56,7 +61,7 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize){
         }
         port = ntohs(addr4->sin_port); //Desfazer, passar da apresentação de rede para a de dispositivo //Network to host short
 
-    } else if(addr->sa_family = AF_INET6){
+    } else if(addr->sa_family == AF_INET6){
         version = 6; //IPv6
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr; //Muda o tipo do ponteiro
         if(!inet_ntop(AF_INET6, &(addr6->sin6_addr), addrstr,
