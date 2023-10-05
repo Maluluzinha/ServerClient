@@ -13,7 +13,7 @@ int addrparse(const char *addrstr, const char *portstr,
         }
 
     //Parse da port
-    uint16_t port = (u_int16_t)(portstr); //Unsigned short. 16bits, esta no padrão do protocolo TCP
+    uint16_t port = (u_int16_t)atoi(portstr); //Unsigned short. 16bits, esta no padrão do protocolo TCP
     if(port == 0){
         return -1; //Passou port errada
     }
@@ -34,7 +34,7 @@ int addrparse(const char *addrstr, const char *portstr,
     struct in6_addr inaddr6; //128-bits IP address
     if(inet_pton(AF_INET6, addrstr, &inaddr6)){ //Parser. Tentar fazer de IPv4, se der certo joga na variável, então não é ipv6
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) storage; //Casting
-        addr6->sin6_family = AF_INET; //Essa estrutura está inicializando o storage lá presente no cliente
+        addr6->sin6_family = AF_INET6; //Essa estrutura está inicializando o storage lá presente no cliente
         addr6->sin6_port = port;
         //addr6->sin6_addr = inaddr6; //Dessa maneira, o arranjo não está correto
         memcpy(&(addr6->sin6_addr), &inaddr6, sizeof(inaddr6)); //Copiando o dado do inaddr6 para outro vetor. Deve usar o endereço do inaddr6

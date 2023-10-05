@@ -17,7 +17,7 @@ void usage(int argc, char **argv){ //Função em caso de erro na chamada
 
 int main(int argc, char **argv){
     if (argc < 3){          //Verifica se chamou o programa corretamente, senão retorna pro usage() acima. Primeiro verificador de erro
-      usage(argc, **argv);    //Ver se os parâmetros tão ok
+      usage(argc, argv);    //Ver se os parâmetros tão ok
     }
     //Lembrar: socket é uma função int -> int socket(int domain, int type, int protocol);
 
@@ -46,15 +46,15 @@ int main(int argc, char **argv){
     printf("Connected succefully with %s", addrstring);
 
     char buf[BUFSZ]; //Armazenar os dados
-    memset(buf, 0, BUFSZ); //Iniciar o ponteiro com 0
-    unsigned total = 0; //
-
     //Cliente primeiro deve enviar o dado
     fgets(buf, BUFSZ+1, stdin); //Lê os dados inseridos no teclado
-    int count = send(s ,buf, strlen(buf)+1, 0); //Envia o dado
+    size_t count = send(s ,buf, strlen(buf)+1, 0); //Envia o dado
     if(count != strlen(buf)+1){ //Erro envio
         logexit("Send");
     }
+
+    memset(buf, 0, BUFSZ); //Iniciar o ponteiro com 0
+    unsigned total = 0; //
 
     while(1){
         count = recv(s, buf +total, BUFSZ -total, 0); //Receber

@@ -13,7 +13,7 @@ void usage(int argc, char **argv){ //Função em caso de erro na chamada
 
 int main(int argc, char **argv){
     if (argc < 3){          //Verifica se chamou o programa corretamente, senão retorna pro usage() acima. Primeiro verificador de erro
-      usage(argc, **argv);    //Ver se os parâmetros tão ok
+      usage(argc, argv);    //Ver se os parâmetros tão ok
     }
 
     struct sockaddr_storage storage; //Instanciavel
