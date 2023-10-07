@@ -1,10 +1,8 @@
 #include "common.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -17,7 +15,19 @@ void usage(int argc, char **argv) {
 
 #define BUFSZ 1024
 
+char sensor[5][BUFSZ];
+char mensageComand[BUFSZ];
+char buf[BUFSZ];
+char bufInfo[BUFSZ];
+
+//Lista de comandos:
+char comandInstall[BUFSZ] = "install";
+char displayData[BUFSZ] = "show";
+char endAll[BUFSZ] = "kill";
+
 int main(int argc, char **argv) {
+
+    //NÃO MEXER
 	if (argc < 3) {
 		usage(argc, argv);
 	}
@@ -32,17 +42,45 @@ int main(int argc, char **argv) {
 	if (s == -1) {
 		logexit("socket");
 	}
-	struct sockaddr *addr = (struct sockaddr *)(&storage);
+	struct sockaddr *addr = (struct sockaddr *)(&storage); //Inicializa com o ponteiro e faz um casting, joga um ponteiro no storage //Ponteiro da struct
 	if (0 != connect(s, addr, sizeof(storage))) {
 		logexit("connect");
 	}
 
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
-
 	printf("connected to %s\n", addrstr);
 
-	char buf[BUFSZ];
+    //NÃO MEXER ACIMA
+
+    //Instalando o sensor
+    memset(buf, 0, BUFSZ);
+    printf("mensagem> ");
+    scanf("%s", &mensageComand);
+	fgets(buf, BUFSZ-1, stdin);
+    char requerimentoMens = "INS_REQ";
+    //scanf("%s %s %s %s %s", sensor[0], sensor[1], sensor[2], sensor[3], sensor[4]);     //COMANDO NSENSOR CORRENTE TENSAO EFENERGETICA
+    if(strcmp(mensageComand, "install") == 0){
+        //bufInfo = sensor;
+        sensor[0][0] = requerimentoMens;
+        scanf("%s %s %s %s", sensor[1], sensor[2], sensor[3], sensor[4]);
+        size_t count = send(s ,buf, strlen(buf)+1, 0); //Envia o dado
+
+    }else 
+    if(strcmp(mensageComand, "kill") == 0){
+        printf("Killed");
+        close(s);
+        exit(EXIT_FAILURE);
+
+    }
+    //else{
+    //   printf("Invalid command \n");
+    //    close(s);
+    //    exit(EXIT_FAILURE);
+    //}
+
+    /////////////////////////////////////////////////////////////
+	//char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
 	printf("mensagem> ");
 	fgets(buf, BUFSZ-1, stdin);
