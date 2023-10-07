@@ -16,14 +16,16 @@ void usage(int argc, char **argv) {
 #define BUFSZ 1024
 
 char sensor[5][BUFSZ];
-char mensageComand[BUFSZ];
+char mensageComand;
 char buf[BUFSZ];
 char bufInfo[BUFSZ];
 
-//Lista de comandos:
+//Lista de comandos de solicitação:
 char comandInstall[BUFSZ] = "install";
 char displayData[BUFSZ] = "show";
 char endAll[BUFSZ] = "kill";
+
+//Pra testar: ./server v4 90900 ./client 127.0.0.1 90900
 
 int main(int argc, char **argv) {
 
@@ -56,19 +58,21 @@ int main(int argc, char **argv) {
     //Instalando o sensor
     memset(buf, 0, BUFSZ);
     printf("mensagem> ");
-    scanf("%s", &mensageComand);
+    scanf("%s", &mensageComand); //Recebe comando de solicitação
+
+
 	fgets(buf, BUFSZ-1, stdin);
     char requerimentoMens = "INS_REQ";
     //scanf("%s %s %s %s %s", sensor[0], sensor[1], sensor[2], sensor[3], sensor[4]);     //COMANDO NSENSOR CORRENTE TENSAO EFENERGETICA
-    if(strcmp(mensageComand, "install") == 0){
+    if(strcmp(&mensageComand, "install") == 0){ //Nesse formato ele recebe o comando bonitinho
         //bufInfo = sensor;
         sensor[0][0] = requerimentoMens;
         scanf("%s %s %s %s", sensor[1], sensor[2], sensor[3], sensor[4]);
         size_t count = send(s ,buf, strlen(buf)+1, 0); //Envia o dado
 
     }else 
-    if(strcmp(mensageComand, "kill") == 0){
-        printf("Killed");
+    if(strcmp(&mensageComand, "kill") == 0){
+        printf("Killed \n");
         close(s);
         exit(EXIT_FAILURE);
 
