@@ -10,6 +10,13 @@
 
 #define BUFSZ 1024
 
+//Mensagens vindas do RTU
+char installRequisition[BUFSZ] = "INS_REQ";
+char removeRequisition[BUFSZ] = "REM_REQ";
+char changeRequisition[BUFSZ] = "CH_REQ";
+char dataRequisition[BUFSZ] = "SEN_REQ";
+char allDataRequisition[BUFSZ] = "VAL_REQ";
+
 void usage(int argc, char **argv) {
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
     printf("example: %s v4 51511\n", argv[0]);
@@ -64,17 +71,23 @@ int main(int argc, char **argv) {
         addrtostr(caddr, caddrstr, BUFSZ);
         printf("[log] connection from %s\n", caddrstr);
 
+        //Agora para receber o dado/ler a mensagem que o cliente enviou
+        //Receiving message from client
         char buf[BUFSZ];
         memset(buf, 0, BUFSZ);
-        size_t count = recv(csock, buf, BUFSZ - 1, 0);
-        printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf);
+        size_t count = recv(csock, buf, BUFSZ - 1, 0);  //Mensagem que chega do cliente
+        printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count, buf); //Print a mensagem do cliente
+
+        //Não mexer acima
+        //CODE INIT HERE:
+
 
         sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
-        count = send(csock, buf, strlen(buf) + 1, 0);
+        count = send(csock, buf, strlen(buf) + 1, 0); //Manda o dado pro cliente
         if (count != strlen(buf) + 1) {
             logexit("send");
         }
-        close(csock);
+        close(csock); //Fecha e volta pro inicio do loop
     }
 
     exit(EXIT_SUCCESS);

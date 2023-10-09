@@ -20,14 +20,30 @@ char mensageComand;
 char buf[BUFSZ];
 char bufInfo[BUFSZ];
 
+struct sensor {
+    char comand[10];
+    int nSensor;
+    int current;
+    int voltage;
+    int energyEficence;
+};
+
+
 //Lista de comandos de solicitação:
 char comandInstall[BUFSZ] = "install";
+char removeSensor[BUFSZ] = "remove";
+char changeData[BUFSZ] = "change";
 char displayData[BUFSZ] = "show";
 char endAll[BUFSZ] = "kill";
+
+//Lista de mensagens:
+ char initSensor[BUFSZ] = "INS_REQ";
 
 //Pra testar: ./server v4 90900 ./client 127.0.0.1 90900
 
 int main(int argc, char **argv) {
+    
+    struct sensor dataSensor;
 
     //NÃO MEXER
 	if (argc < 3) {
@@ -55,38 +71,53 @@ int main(int argc, char **argv) {
 
     //NÃO MEXER ACIMA
 
-    //Instalando o sensor
     memset(buf, 0, BUFSZ);
-    printf("mensagem> ");
-    scanf("%s", &mensageComand); //Recebe comando de solicitação
+    //printf("mensagem> ");
+    //scanf("%s", &mensageComand); //Recebe comando de solicitação
 
 
-	fgets(buf, BUFSZ-1, stdin);
-    char requerimentoMens = "INS_REQ";
+	//fgets(buf, BUFSZ-1, stdin);
+	char dataSensorStr[BUFSZ];
+	printf("Comando e dados (ex: 'install 1 10 220 90'): ");
+	fgets(dataSensorStr, BUFSZ - 1, stdin);
+    //char requerimentoMens = "INS_REQ";
     //scanf("%s %s %s %s %s", sensor[0], sensor[1], sensor[2], sensor[3], sensor[4]);     //COMANDO NSENSOR CORRENTE TENSAO EFENERGETICA
-    if(strcmp(&mensageComand, "install") == 0){ //Nesse formato ele recebe o comando bonitinho
-        //bufInfo = sensor;
-        sensor[0][0] = requerimentoMens;
-        scanf("%s %s %s %s", sensor[1], sensor[2], sensor[3], sensor[4]);
-        size_t count = send(s ,buf, strlen(buf)+1, 0); //Envia o dado
+    //if(strcmp(&mensageComand, "install") == 0){ //Nesse formato ele recebe o comando bonitinho
+        strcpy(dataSensor.comand, initSensor);
+        //scanf("%d %d %d %d", &dataSensor.nSensor,
+        //                     &dataSensor.current,
+        //                     &dataSensor.voltage,
+        //                     &dataSensor.energyEficence);
+
+		if (strncmp(dataSensorStr, "install", strlen("install")) == 0) {
+		strcpy(dataSensor.comand, initSensor);
+		sprintf(dataSensorStr, "%s %d %d %d %d",
+    			dataSensor.comand,
+    			dataSensor.nSensor,
+    			dataSensor.current,
+    			dataSensor.voltage,
+    			dataSensor.energyEficence);
+
+		size_t count = send(s, dataSensorStr, strlen(dataSensorStr) + 1, 0);
+		
+		if (count != strlen(buf)+1) {
+		logexit("send");
+		}
+        //size_t count = send(s, &dataSensor, sizeof(dataSensor), 0);
 
     }else 
-    if(strcmp(&mensageComand, "kill") == 0){
+    
+    if(strncmp(dataSensorStr, "kill", strlen("kill")) == 0){
         printf("Killed \n");
         close(s);
         exit(EXIT_FAILURE);
 
     }
-    //else{
-    //   printf("Invalid command \n");
-    //    close(s);
-    //    exit(EXIT_FAILURE);
-    //}
 
     /////////////////////////////////////////////////////////////
 	//char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
-	printf("mensagem> ");
+	printf("Aviso> ");
 	fgets(buf, BUFSZ-1, stdin);
 	size_t count = send(s, buf, strlen(buf)+1, 0);
 	if (count != strlen(buf)+1) {
