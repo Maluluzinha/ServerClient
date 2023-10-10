@@ -10,6 +10,10 @@
 
 #define BUFSZ 1024
 
+void decodeString(const char *input, char *command, int *nSensor, int *current, int *voltage, int *energyEficence) {
+    sscanf(input, "%s %d %d %d %d", command, nSensor, current, voltage, energyEficence);
+}
+
 //Mensagens vindas do RTU
 char installRequisition[BUFSZ] = "INS_REQ";
 char removeRequisition[BUFSZ] = "REM_REQ";
@@ -80,7 +84,17 @@ int main(int argc, char **argv) {
 
         //Não mexer acima
         //CODE INIT HERE:
+        // Decodificando a string
+        //char command[BUFSZ];
+        //int nSensor, current, voltage, energyEficence;
+        //decodeString(buf, command, &nSensor, &current, &voltage, &energyEficence);
 
+        // Exibindo os valores decodificados
+        //printf("Comando: %s\n", command);
+        //printf("Número do Sensor: %d\n", nSensor);
+        //printf("Corrente: %d\n", current);
+        //printf("Tensão: %d\n", voltage);
+        //printf("Eficiência Energética: %d\n", energyEficence);
 
         sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
         count = send(csock, buf, strlen(buf) + 1, 0); //Manda o dado pro cliente
