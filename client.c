@@ -70,15 +70,14 @@ int main(int argc, char **argv) {
 	printf("connected to %s\n", addrstr);
 	//
 	//CODE INIT:
-	char command[BUFSZ];
-	fgets(command, BUFSZ, stdin);
+	//char command[BUFSZ];
+	//fgets(command, BUFSZ, stdin);
 	//Recebe o comando
 	char mensageComand;
 	scanf("%s", &mensageComand);
 	size_t len = strlen(&mensageComand);
 	//If que verifica o comando
 	if(strcmp(&mensageComand, "install") == 0){
-		//if(strcmp(&mensageComand, "device") == 0){
 		char buf[5][BUFSZ]; //5 valores na string, de valor x
      	char *msg_req = "INS_REQ";
       	memcpy(buf[0], msg_req, sizeof(&msg_req));
@@ -92,7 +91,7 @@ int main(int argc, char **argv) {
                 buf[i][len - 1] = '\0';
             }
         }
-		char buf_to_send[BUFSZ];	//Uma unica string
+		char buf_to_send[BUFSZ];	   //Uma unica string para enviar
       	memset(buf_to_send, 0, BUFSZ); //Memoria pra string
 		for (int i = 0; i <= 4; i++) {
            strcat(buf_to_send, buf[i]);
@@ -105,9 +104,16 @@ int main(int argc, char **argv) {
       		if (count != strlen(buf_to_send) + 1) {
         		logexit("send");
       		}
-		//}
 	 }
 	 else if(strcmp(&mensageComand, "kill") == 0){
+		//char buf[1][BUFSZ]; //1 valor na string - char kill
+     	//char *msg_req = "kill";
+      	//memcpy(buf[0], msg_req, sizeof(&msg_req));
+		
+		char buf_to_send[BUFSZ];	//Uma unica string
+      	memset(buf_to_send, 0, BUFSZ); //Aloca memória
+		strcat(buf_to_send, "kill");
+		send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
 		printf("Killed \n");
         close(s);
         exit(EXIT_FAILURE);
@@ -124,7 +130,7 @@ int main(int argc, char **argv) {
 
 	char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
-	//printf("mensagem> ");
+	printf("mensagem> ");
 	fgets(buf, BUFSZ-1, stdin);
 	size_t count = send(s, buf, strlen(buf)+1, 0);
 	if (count != strlen(buf)+1) {

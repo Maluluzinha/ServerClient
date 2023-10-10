@@ -13,13 +13,13 @@
 void decodeString(const char *input, char *command, int *nSensor, int *current, int *voltage, int *energyEficence) {
     sscanf(input, "%s %d %d %d %d", command, nSensor, current, voltage, energyEficence);
 }
-
+#define tamanhoPadrao 10
 //Mensagens vindas do RTU
-char installRequisition[BUFSZ] = "INS_REQ";
-char removeRequisition[BUFSZ] = "REM_REQ";
-char changeRequisition[BUFSZ] = "CH_REQ";
-char dataRequisition[BUFSZ] = "SEN_REQ";
-char allDataRequisition[BUFSZ] = "VAL_REQ";
+char installRequisition[tamanhoPadrao] = "INS_REQ";
+char removeRequisition[tamanhoPadrao] = "REM_REQ";
+char changeRequisition[tamanhoPadrao] = "CH_REQ";
+char dataRequisition[tamanhoPadrao] = "SEN_REQ";
+char allDataRequisition[tamanhoPadrao] = "VAL_REQ";
 
 void usage(int argc, char **argv) {
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
@@ -84,23 +84,42 @@ int main(int argc, char **argv) {
 
         //Não mexer acima
         //CODE INIT HERE:
-        // Decodificando a string
+        //Decodificando a string
         //char command[BUFSZ];
         //int nSensor, current, voltage, energyEficence;
         //decodeString(buf, command, &nSensor, &current, &voltage, &energyEficence);
+        if (0 == strncmp(buf, "INS_REQ", 7)) {
+        char buffer[5][BUFSZ];
+         //Separa em espaço
+        char espacoChar[] = " ";
+        char *token = strtok(buf, espacoChar);
+        int i = 0;
+        while (NULL != token) {
+        strcpy(buffer[i], token);
+        token = strtok(NULL, espacoChar);
+        i++;
+      }
+      int dadosSensor[4];
+      for (int i = 1; i < 5; i++) {
+        dadosSensor[i - 1] = atoi(buffer[i]);
+      }
 
         // Exibindo os valores decodificados
         //printf("Comando: %s\n", command);
-        //printf("Número do Sensor: %d\n", nSensor);
-        //printf("Corrente: %d\n", current);
-        //printf("Tensão: %d\n", voltage);
-        //printf("Eficiência Energética: %d\n", energyEficence);
+        printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
+    }
+    else if (0 == strncmp(buf, "kill", 7)){
+        close(csock);
+        exit(EXIT_FAILURE);
+    }
+        //CODE END HERE
 
         sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
         count = send(csock, buf, strlen(buf) + 1, 0); //Manda o dado pro cliente
         if (count != strlen(buf) + 1) {
             logexit("send");
         }
+        memset(buf, 0, BUFSZ);
         close(csock); //Fecha e volta pro inicio do loop
     }
 
