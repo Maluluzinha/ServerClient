@@ -21,3 +21,4 @@ struct sensor {
     int voltage;
     int energyEficence;
 };
+

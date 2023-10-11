@@ -73,30 +73,58 @@ int main(int argc, char **argv) {
 	//char command[BUFSZ];
 	//fgets(command, BUFSZ, stdin);
 	//Recebe o comando
-	char mensageComand;
-	scanf("%s", &mensageComand);
-	size_t len = strlen(&mensageComand);
+	//char mensageComand[BUFSZ];
+	//scanf("%s", mensageComand);
+	//fgets(mensageComand, BUFSZ, stdin);
+	//size_t len = strlen(mensageComand);
+	char mensageComand[BUFSZ];
+	scanf("%s", mensageComand);
+	char buffer[10][BUFSZ];
+    //Separa a string por espaço
+    char espacoChar[] = " ";
+    char *token = strtok(mensageComand, espacoChar);
+	char *dados[100]; // Um array de ponteiros de strings para armazenar as palavras
+    //int num_tokens = 0;
+    int i = 0;
+        while (NULL != token) {
+			dados[0] = token;
+            strcpy(buffer[i], token);
+            token = strtok(NULL, espacoChar);
+            i++;
+		}
+	for(int i = 0; i<BUFSZ; i++){
+		//printf("String %s", buffer[i]);
+	}
 	//If que verifica o comando
-	if(strcmp(&mensageComand, "install") == 0){
-		char buf[5][BUFSZ]; //5 valores na string, de valor x
+	if(strcmp(buffer[0], "install") == 0){
+		char buf[10][BUFSZ]; //5 valores na string, de valor x
      	char *msg_req = "INS_REQ";
       	memcpy(buf[0], msg_req, sizeof(&msg_req));
-		//Recebe os dados
-      	//scanf("%s in %1s : %s %s", buf[1], buf[2], buf[3], buf[4]);
-		for (int i = 1; i <= 4; i++) {
-            fgets(buf[i], BUFSZ, stdin);
-            //Remova o caractere de nova linha do final da string (se existir)
-            len = strlen(buf[i]);
-            if (len > 0 && buf[i][len - 1] == '\n') {
-                buf[i][len - 1] = '\0';
-            }
-        }
+		memcpy(buffer[0], msg_req, sizeof(&msg_req));
+		for (int i = 0; i < 10; i++) {
+		printf("%s", buffer[i]);
+		}
+		// char dadosSensor[4];
+        // for (int i = 1; i < 5; i++) {
+        // printf("%s", buffer[i]);
+        // }
+		//printf("%s", dadosSensor);
+
+		//for (int i = 0; i < 10; i++) {
+            //strncpy(buf[i + 1], dados[i], BUFSZ - 1);
+
+        //}
+        //for (int i = 0; i < 11; i++) {
+		//	strcpy(buf[i], dados[i]);
+        //}
+
 		char buf_to_send[BUFSZ];	   //Uma unica string para enviar
       	memset(buf_to_send, 0, BUFSZ); //Memoria pra string
 		for (int i = 0; i <= 4; i++) {
            strcat(buf_to_send, buf[i]);
            strcat(buf_to_send, " ");
         }
+		
       	//strcpy(buf_to_send, buf[0]);	//Copia o buffer
       	size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
 
@@ -105,11 +133,11 @@ int main(int argc, char **argv) {
         		logexit("send");
       		}
 	 }
-	 else if(strcmp(&mensageComand, "kill") == 0){
+	 else if(strcmp(buffer[0], "kill") == 0){
 		//char buf[1][BUFSZ]; //1 valor na string - char kill
      	//char *msg_req = "kill";
       	//memcpy(buf[0], msg_req, sizeof(&msg_req));
-		
+
 		char buf_to_send[BUFSZ];	//Uma unica string
       	memset(buf_to_send, 0, BUFSZ); //Aloca memória
 		strcat(buf_to_send, "kill");

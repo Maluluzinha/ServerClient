@@ -21,6 +21,15 @@ char changeRequisition[tamanhoPadrao] = "CH_REQ";
 char dataRequisition[tamanhoPadrao] = "SEN_REQ";
 char allDataRequisition[tamanhoPadrao] = "VAL_REQ";
 
+//Status pro RTU
+char statusMensagem[BUFSZ];
+//Vetor de sensores
+#define N_SENSORES 100 // Número máximo de sensores
+#define DADOS_SENSOR 100 // Tamanho máximo das informações
+char tabelaSensor[N_SENSORES][DADOS_SENSOR];
+
+//memset(statusMensagem, 0, BUFSZ); 
+
 void usage(int argc, char **argv) {
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
     printf("example: %s v4 51511\n", argv[0]);
@@ -99,14 +108,26 @@ int main(int argc, char **argv) {
         token = strtok(NULL, espacoChar);
         i++;
       }
-      int dadosSensor[4];
-      for (int i = 1; i < 5; i++) {
+        int dadosSensor[4];
+        for (int i = 1; i < 5; i++) {
         dadosSensor[i - 1] = atoi(buffer[i]);
-      }
+        }
+        //Calcula a potência:
+        int potencia = dadosSensor[1] * dadosSensor[2];
+        printf("Números: %s, Corrente: %s, Tensão: %s, Eficiência: %s\n", buffer[0], buffer[1], buffer[2], buffer[3]);
 
-        // Exibindo os valores decodificados
+        //Adicionando na tabela de sensor
+        // for(int i = 0; i < N_SENSORES; i++){
+        // if(dadosSensor[0] != tabelaSensor[i][100]) {
+        //     tabelaSensor[N_SENSORES][j] = dadosSensor[j];
+        // }
+        // }
+        //Exibindo os valores decodificados
         //printf("Comando: %s\n", command);
         printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
+        printf("Potencia: %d", potencia);
+        sprintf(statusMensagem, "OK 01\n");
+        send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
     }
     else if (0 == strncmp(buf, "kill", 7)){
         close(csock);
