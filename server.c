@@ -93,10 +93,6 @@ int main(int argc, char **argv) {
 
         //Não mexer acima
         //CODE INIT HERE:
-        //Decodificando a string
-        //char command[BUFSZ];
-        //int nSensor, current, voltage, energyEficence;
-        //decodeString(buf, command, &nSensor, &current, &voltage, &energyEficence);
         if (0 == strncmp(buf, "INS_REQ", 7)) {
         char buffer[5][BUFSZ];
          //Separa em espaço
@@ -114,18 +110,10 @@ int main(int argc, char **argv) {
         }
         //Calcula a potência:
         int potencia = dadosSensor[1] * dadosSensor[2];
-        printf("Números: %s, Corrente: %s, Tensão: %s, Eficiência: %s\n", buffer[0], buffer[1], buffer[2], buffer[3]);
-
-        //Adicionando na tabela de sensor
-        // for(int i = 0; i < N_SENSORES; i++){
-        // if(dadosSensor[0] != tabelaSensor[i][100]) {
-        //     tabelaSensor[N_SENSORES][j] = dadosSensor[j];
-        // }
-        // }
-        //Exibindo os valores decodificados
-        //printf("Comando: %s\n", command);
+       
+        printf("Potencia: %d \n", potencia);
         printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
-        printf("Potencia: %d", potencia);
+        //printf("Potencia: %d /n", potencia);
         sprintf(statusMensagem, "OK 01\n");
         send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
     }

@@ -19,13 +19,28 @@ char sensor[5][BUFSZ];
 char buf[BUFSZ];
 char bufInfo[BUFSZ];
 
-//struct sensor {
-//    char comand[10];
-//    int nSensor;
-//    int current;
-//    int voltage;
-//    int energyEficence;
-//};
+void quebraString(const char *entrada, char *info[], int maxPedacos) {
+    char copiaEntrada[strlen(entrada) + 1];
+    strcpy(copiaEntrada, entrada);
+	char espacoChar[] = " ";
+
+    int contador = 0;
+    char *token = strtok(copiaEntrada, espacoChar);
+
+    while (token != NULL && contador < maxPedacos) {
+        info[contador] = strdup(token); // Aloca memória para cada pedaço
+        token = strtok(NULL, espacoChar);
+        contador++;
+    }
+}
+
+int quantosDados(const char *dados[]) {
+    int tamanho = 0;
+    while (dados[tamanho] != NULL) {
+        tamanho++;
+    }
+    return tamanho;
+}
 
 
 //Lista de comandos de solicitação:
@@ -70,87 +85,58 @@ int main(int argc, char **argv) {
 	printf("connected to %s\n", addrstr);
 	//
 	//CODE INIT:
-	//char command[BUFSZ];
-	//fgets(command, BUFSZ, stdin);
-	//Recebe o comando
-	//char mensageComand[BUFSZ];
-	//scanf("%s", mensageComand);
-	//fgets(mensageComand, BUFSZ, stdin);
-	//size_t len = strlen(mensageComand);
-	char mensageComand[BUFSZ];
-	scanf("%s", mensageComand);
-	char buffer[10][BUFSZ];
-    //Separa a string por espaço
-    char espacoChar[] = " ";
-    char *token = strtok(mensageComand, espacoChar);
-	char *dados[100]; // Um array de ponteiros de strings para armazenar as palavras
-    //int num_tokens = 0;
-    int i = 0;
-        while (NULL != token) {
-			dados[0] = token;
-            strcpy(buffer[i], token);
-            token = strtok(NULL, espacoChar);
-            i++;
-		}
-	for(int i = 0; i<BUFSZ; i++){
-		//printf("String %s", buffer[i]);
-	}
-	//If que verifica o comando
-	if(strcmp(buffer[0], "install") == 0){
-		char buf[10][BUFSZ]; //5 valores na string, de valor x
-     	char *msg_req = "INS_REQ";
-      	memcpy(buf[0], msg_req, sizeof(&msg_req));
-		memcpy(buffer[0], msg_req, sizeof(&msg_req));
-		for (int i = 0; i < 10; i++) {
-		printf("%s", buffer[i]);
-		}
-		// char dadosSensor[4];
-        // for (int i = 1; i < 5; i++) {
-        // printf("%s", buffer[i]);
-        // }
-		//printf("%s", dadosSensor);
+    char dadosDigitados[BUFSZ]; //Entrada
+    printf("Digite uma string: ");
+    fgets(dadosDigitados, sizeof(dadosDigitados), stdin);
 
-		//for (int i = 0; i < 10; i++) {
-            //strncpy(buf[i + 1], dados[i], BUFSZ - 1);
+    dadosDigitados[strcspn(dadosDigitados, "\n")] = '\0'; // Remover o caractere de nova linha
 
-        //}
-        //for (int i = 0; i < 11; i++) {
-		//	strcpy(buf[i], dados[i]);
-        //}
+    char *dados[20]; //Limite de 20 palavras
+    quebraString(dadosDigitados, dados, 20);
+    quantosDados((const char **)dados);
 
-		char buf_to_send[BUFSZ];	   //Uma unica string para enviar
-      	memset(buf_to_send, 0, BUFSZ); //Memoria pra string
-		for (int i = 0; i <= 4; i++) {
-           strcat(buf_to_send, buf[i]);
-           strcat(buf_to_send, " ");
-        }
-		
-      	//strcpy(buf_to_send, buf[0]);	//Copia o buffer
-      	size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+	if (dados[0] != NULL) {
+		//INSTALAR SENSOR:
+        if (strcmp(dados[0], "install") == 0) {
+            //printf("Comando 'install' detectado.\n");
+		if(quantosDados((const char **)dados) == 6){
+        char *msg_req = "INS_REQ";
+      	memcpy(dados[1], msg_req, sizeof(&msg_req));
+		    char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	    memset(buf_to_send, 0, BUFSZ); //Memoria pra string
+		    for (int i = 1; i <= 5; i++) {
+            strcat(buf_to_send, dados[i]);
+            strcat(buf_to_send, " ");
+            }
 
+		size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
 
       		if (count != strlen(buf_to_send) + 1) {
         		logexit("send");
       		}
-	 }
-	 else if(strcmp(buffer[0], "kill") == 0){
-		//char buf[1][BUFSZ]; //1 valor na string - char kill
-     	//char *msg_req = "kill";
-      	//memcpy(buf[0], msg_req, sizeof(&msg_req));
+		    } else{
+				(printf("ERROR 03 \n"));
+				close(s);
+                exit(EXIT_FAILURE);
+			}
+		//COMANDO KILL
+		} else if(strcmp(dados[0], "kill") == 0){
+			char buf_to_send[BUFSZ];	//Uma unica string
+      	    memset(buf_to_send, 0, BUFSZ); //Aloca memória
+		    strcat(buf_to_send, "kill");
+		    send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+		    printf("Killed \n");
+            close(s);
+            exit(EXIT_FAILURE);
 
-		char buf_to_send[BUFSZ];	//Uma unica string
-      	memset(buf_to_send, 0, BUFSZ); //Aloca memória
-		strcat(buf_to_send, "kill");
-		send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
-		printf("Killed \n");
-        close(s);
-        exit(EXIT_FAILURE);
+		} else {
+		  printf("Invalid command \n");
+          close(s);
+          exit(EXIT_FAILURE);
 	 }
-	 else {
-		printf("Invalid command \n");
-        close(s);
-        exit(EXIT_FAILURE);
-	 }
+		
+	}
+
 
 	 
 
@@ -158,8 +144,8 @@ int main(int argc, char **argv) {
 
 	char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
-	printf("mensagem> ");
-	fgets(buf, BUFSZ-1, stdin);
+	//printf("mensagem> ");
+	//fgets(buf, BUFSZ-1, stdin);
 	size_t count = send(s, buf, strlen(buf)+1, 0);
 	if (count != strlen(buf)+1) {
 		logexit("send");
