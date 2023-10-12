@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -26,9 +27,99 @@ char statusMensagem[BUFSZ];
 //Vetor de sensores
 #define N_SENSORES 100 // Número máximo de sensores
 #define DADOS_SENSOR 100 // Tamanho máximo das informações
-char tabelaSensor[N_SENSORES][DADOS_SENSOR];
+int tabelaSensor[N_SENSORES][DADOS_SENSOR]; //Tabela
+int dadosSensor[4]; //Dados
 
-//memset(statusMensagem, 0, BUFSZ); 
+void adicionarSensor(int dadosSensor[]) {
+    int numero = dadosSensor[0];
+
+    // Verifica se já existe um sensor com o mesmo ID (numero)
+    for (int i = 0; i < N_SENSORES; i++) {
+        if (tabelaSensor[i][0] == numero) {
+            printf("Um sensor com o ID %d já existe na tabela.\n", numero);
+            return; // Não adiciona o sensor se já existe um com o mesmo ID
+        }
+    }
+
+    // Encontra um índice vazio na tabelaSensor e armazena os dados
+    int indiceVazio = -1;
+    for (int i = 0; i < N_SENSORES; i++) {
+        if (tabelaSensor[i][0] == 0) {
+            indiceVazio = i;
+            break;
+        }
+    }
+
+    if (indiceVazio != -1) {
+        tabelaSensor[indiceVazio][0] = numero;
+        tabelaSensor[indiceVazio][1] = dadosSensor[1];
+        tabelaSensor[indiceVazio][2] = dadosSensor[2];
+        tabelaSensor[indiceVazio][3] = dadosSensor[3];
+        printf("Sensor com o ID %d adicionado à tabela.\n", numero);
+    } else {
+        printf("A tabela de sensores está cheia, não é possível adicionar mais sensores.\n");
+    }
+    
+}
+
+void imprimirSensores() {
+    for (int i = 0; i < N_SENSORES; i++) {
+        if (tabelaSensor[i][0] != 0) {
+            printf("Sensor %d:\n", tabelaSensor[i][0]);
+            printf("Corrente: %d\n", tabelaSensor[i][1]);
+            printf("Tensão: %d\n", tabelaSensor[i][2]);
+            printf("Eficiência: %d\n", tabelaSensor[i][3]);
+            printf("\n");
+        }
+    }
+}
+
+// bool sensorExists(int sensorId) {
+//      for (int i = 0; i < N_SENSORES; i++) {
+//         if (tabelaSensor[i][0] == sensorId) {
+//             return true; // Sensor encontrado na tabela.
+//         }
+//     }
+//     return false; // Sensor não encontrado na tabela.
+// }
+
+bool sensorExists(int dadosSensor[]) {
+    int numero = dadosSensor[0];
+    // Verifica se já existe um sensor com o mesmo ID (numero)
+    for (int i = 0; i < N_SENSORES; i++) {
+        if (tabelaSensor[i][0] == numero) {
+            printf("Um sensor com o ID %d já existe na tabela.\n", numero);
+            return true; // Sensor encontrado na tabela.
+        }
+    }
+    printf("Um sensor com o ID %d não existe na tabela.\n", numero);
+    return false; // Sensor não encontrado na tabela.
+}
+
+// void statusSensor(int dadosSensor[]){
+//  int numero = dadosSensor[0];
+
+//     // Verifica se já existe um sensor com o mesmo ID (numero)
+//     for (int i = 0; i < N_SENSORES; i++) {
+//         if (tabelaSensor[i][0] == numero) {
+//             printf("Um sensor com o ID %d já existe na tabela.\n", numero);
+//             return; // Não adiciona o sensor se já existe um com o mesmo ID
+//         }
+//         else{
+//             printf("Um sensor com o ID %d não existe.\n", numero);
+//         }
+//     }
+// }
+//Talvez seja util
+
+void limparTabelaSensor() {
+    for (int i = 0; i < N_SENSORES; i++) {
+        for (int j = 0; j < DADOS_SENSOR; j++) {
+            tabelaSensor[i][j] = 0; // Define todos os elementos da matriz para zero
+        }
+    }
+}
+
 
 void usage(int argc, char **argv) {
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
@@ -37,6 +128,14 @@ void usage(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+
+    //INICIALIZA TABELA
+    for (int i = 0; i < N_SENSORES; i++) {
+        for (int j = 0; j < DADOS_SENSOR; j++) {
+            tabelaSensor[i][j] = 0;
+        }
+    }
+
     if (argc < 3) {
         usage(argc, argv);
     }
@@ -80,6 +179,7 @@ int main(int argc, char **argv) {
             logexit("accept");
         }
 
+    //    while (1){ 
         char caddrstr[BUFSZ];
         addrtostr(caddr, caddrstr, BUFSZ);
         printf("[log] connection from %s\n", caddrstr);
@@ -104,19 +204,52 @@ int main(int argc, char **argv) {
         token = strtok(NULL, espacoChar);
         i++;
       }
-        int dadosSensor[4];
+        //int dadosSensor[4];
         for (int i = 1; i < 5; i++) {
         dadosSensor[i - 1] = atoi(buffer[i]);
         }
         //Calcula a potência:
         int potencia = dadosSensor[1] * dadosSensor[2];
+        adicionarSensor(dadosSensor);
        
         printf("Potencia: %d \n", potencia);
         printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
         //printf("Potencia: %d /n", potencia);
         sprintf(statusMensagem, "OK 01\n");
         send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
+        
+    } //EXIBE INFO
+    if (0 == strncmp(buf, "SEN_REQ", 7)) {
+        // adicionarSensor(dadosSensor);
+        // sprintf(statusMensagem, "Recebi %d\n", dadosSensor[0]);
+        // send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
+        // //imprimirSensores();
+        // //idDados(dadosSensor);
+        // if(sensorExists(dadosSensor[0]) == 1){
+        //     sprintf(statusMensagem, "Recebi %d\n", dadosSensor[0]);
+        //     send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
+        //     memset(statusMensagem, 0, sizeof(statusMensagem));
+        // }
+        // //sprintf(statusMensagem, "Info Sensor \n");
+        // //send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
+        // else{
+        //     sprintf(statusMensagem, "ERROR 01\n");
+        //     send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); //Manda o dado pro cliente
+        //     memset(statusMensagem, 0, sizeof(statusMensagem));
+        // }
+        //   adicionarSensor(dadosSensor);
+        void imprimirSensores();
+        memset(statusMensagem, 0, BUFSZ);
+    if (sensorExists(dadosSensor)) {
+        printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
+        sprintf(statusMensagem, "Recebi %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1], dadosSensor[2], dadosSensor[3]);
+        send(csock, statusMensagem, strlen(statusMensagem) + 1, 0);
+    } else {
+        sprintf(statusMensagem, "Sensor com ID %d não encontrado.\n", dadosSensor[0]);
+        send(csock, statusMensagem, strlen(statusMensagem) + 1, 0);
     }
+    }
+
     else if (0 == strncmp(buf, "kill", 7)){
         close(csock);
         exit(EXIT_FAILURE);
@@ -129,6 +262,7 @@ int main(int argc, char **argv) {
             logexit("send");
         }
         memset(buf, 0, BUFSZ);
+    
         close(csock); //Fecha e volta pro inicio do loop
     }
 

@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	if (argc < 3) {
 		usage(argc, argv);
 	}
-
+	
 	struct sockaddr_storage storage;
 	if (0 != addrparse(argv[1], argv[2], &storage)) {
 		usage(argc, argv);
@@ -80,12 +80,16 @@ int main(int argc, char **argv) {
 		logexit("connect");
 	}
 
+//	while(1){
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 	printf("connected to %s\n", addrstr);
 	//
 	//CODE INIT:
+	while(1){ //Envia o 01
+
     char dadosDigitados[BUFSZ]; //Entrada
+	memset(dadosDigitados, 0, BUFSZ); //Aloca memória
     printf("Digite uma string: ");
     fgets(dadosDigitados, sizeof(dadosDigitados), stdin);
 
@@ -93,13 +97,14 @@ int main(int argc, char **argv) {
 
     char *dados[20]; //Limite de 20 palavras
     quebraString(dadosDigitados, dados, 20);
-    quantosDados((const char **)dados);
+    
 
 	if (dados[0] != NULL) {
 		//INSTALAR SENSOR:
         if (strcmp(dados[0], "install") == 0) {
             //printf("Comando 'install' detectado.\n");
 		if(quantosDados((const char **)dados) == 6){
+		printf("We are Number %d",quantosDados((const char **)dados));
         char *msg_req = "INS_REQ";
       	memcpy(dados[1], msg_req, sizeof(&msg_req));
 		    char buf_to_send[BUFSZ];	   //Uma unica string para enviar
@@ -109,7 +114,7 @@ int main(int argc, char **argv) {
             strcat(buf_to_send, " ");
             }
 
-		size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+			size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
 
       		if (count != strlen(buf_to_send) + 1) {
         		logexit("send");
@@ -119,8 +124,23 @@ int main(int argc, char **argv) {
 				close(s);
                 exit(EXIT_FAILURE);
 			}
-		//COMANDO KILL
-		} else if(strcmp(dados[0], "kill") == 0){
+		
+		} else if(strcmp(dados[0], "show") == 0){ //COMANDO SHOW
+			char *msg_req = "SEN_REQ";
+      		memcpy(dados[1], msg_req, sizeof(&msg_req));
+
+			char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	    memset(buf_to_send, 0, BUFSZ); //Memoria pra string
+			for (int i = 1; i < 3; i++) {
+            strcat(buf_to_send, dados[i]);
+            strcat(buf_to_send, " ");
+            }
+			size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+			if (count != strlen(buf_to_send) + 1) {
+        		logexit("send");
+      		}
+
+		} else if(strcmp(dados[0], "kill") == 0){ //COMANDO KILL
 			char buf_to_send[BUFSZ];	//Uma unica string
       	    memset(buf_to_send, 0, BUFSZ); //Aloca memória
 		    strcat(buf_to_send, "kill");
@@ -131,6 +151,7 @@ int main(int argc, char **argv) {
 
 		} else {
 		  printf("Invalid command \n");
+		  
           close(s);
           exit(EXIT_FAILURE);
 	 }
@@ -161,10 +182,12 @@ int main(int argc, char **argv) {
 		}
 		total += count;
 	}
-	close(s);
-
 	printf("received %u bytes\n", total);
+	
+	
 	puts(buf);
-
+	//}
+	close(s);
 	exit(EXIT_SUCCESS);
+	}
 }
