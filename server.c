@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
             //tabelaSensor[indiceVazio][2] = dadosSensor[2];
             tabelaSensor[indiceVazio][3] = dadosSensor[3];
             printf("Sensor com o ID %d adicionado à tabela.\n", numero);
-            sprintf(statusMensagem, "OK 01\n");
+            sprintf(statusMensagem, "successful installation\n");
             send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
         }  else {
             printf("A tabela de sensores está cheia, não é possível adicionar mais sensores.\n");
@@ -263,7 +263,41 @@ int main(int argc, char **argv) {
         
     } //EXIBE INFO
     if (0 == strncmp(buf, "SEN_REQ", 7)) {
-
+        char buffer[5][BUFSZ];
+        memset(statusMensagem, 0, BUFSZ); //Limpa o vetor de status
+         //Separa em espaço
+        char espacoChar[] = " ";
+        char *token = strtok(buf, espacoChar);
+        int i = 0;
+        while (NULL != token) {
+        strcpy(buffer[i], token);
+        token = strtok(NULL, espacoChar);
+        i++;
+      }
+        //int dadosSensor[4];
+        for (int i = 1; i < 5; i++) {
+        dadosSensor[i - 1] = atoi(buffer[i]);
+        }
+        //Calcula a potência:
+        int potencia = dadosSensor[1] * dadosSensor[2];
+        
+        int numero = dadosSensor[0];
+        bool sensorExiste = false; // Variável de controle
+        // Verifica se já existe um sensor com o mesmo ID (numero)
+        for (int i = 0; i < N_SENSORES; i++) {
+            if (tabelaSensor[i][0] == numero) {
+                sensorExiste = true; // Sensor já existe
+                break;
+            }
+        }
+        if (sensorExiste == true){
+            sprintf(statusMensagem, "sensor %d: Potencia: %d, Eficiência: %d\n", dadosSensor[0], potencia, dadosSensor[3]);
+            send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
+        }
+        else {
+            sprintf(statusMensagem, "sensor not installed\n");
+            send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
+        }
 
     }
 

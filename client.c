@@ -42,23 +42,10 @@ int quantosDados(const char *dados[]) {
     return tamanho;
 }
 
-
-//Lista de comandos de solicitação:
-char comandInstall[BUFSZ] = "install";
-char removeSensor[BUFSZ] = "remove";
-char changeData[BUFSZ] = "change";
-char displayData[BUFSZ] = "show";
-char endAll[BUFSZ] = "kill";
-
-//Lista de mensagens:
- char initSensor[BUFSZ] = "INS_REQ";
-
 //Pra testar: ./server v4 90900 ./client 127.0.0.1 90900
 //Arg_insreq é argmentos pro insreq, ´5 pq ~sao 5 argumentos na string;
 
 int main(int argc, char **argv) {
-    
-    //struct sensor dataSensor;
 
     //NÃO MEXER
 	if (argc < 3) {
@@ -104,7 +91,7 @@ int main(int argc, char **argv) {
         if (strcmp(dados[0], "install") == 0) {
             //printf("Comando 'install' detectado.\n");
 		if(quantosDados((const char **)dados) == 6){
-		printf("We are Number %d\n",quantosDados((const char **)dados));
+		//printf("We are Number %d\n",quantosDados((const char **)dados));
         char *msg_req = "INS_REQ";
       	memcpy(dados[1], msg_req, sizeof(&msg_req));
 		    char buf_to_send[BUFSZ];	   //Uma unica string para enviar
@@ -125,6 +112,14 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
 			}
 		
+		} else if(strcmp(dados[0], "remove") == 0){	//COMANDO REMOVE
+			char *msg_req = "SEN_REQ";
+      		memcpy(dados[0], msg_req, sizeof(&msg_req));
+
+
+
+
+
 		} else if(strcmp(dados[0], "show") == 0){ //COMANDO SHOW
 			char *msg_req = "SEN_REQ";
       		memcpy(dados[1], msg_req, sizeof(&msg_req));
@@ -140,7 +135,10 @@ int main(int argc, char **argv) {
         		logexit("send");
       		}
 
-		} else if(strcmp(dados[0], "kill") == 0){ //COMANDO KILL
+		} else if(strcmp(dados[0], "show") == 0){	 //COMANDO PARA MOSTRAR TODOS
+			
+			
+		}else if(strcmp(dados[0], "kill") == 0){ //COMANDO KILL
 			char buf_to_send[BUFSZ];	//Uma unica string
       	    memset(buf_to_send, 0, BUFSZ); //Aloca memória
 		    strcat(buf_to_send, "kill");
