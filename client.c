@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
         if (strcmp(dados[0], "install") == 0) {
             //printf("Comando 'install' detectado.\n");
 		if(quantosDados((const char **)dados) == 6){
-		printf("We are Number %d",quantosDados((const char **)dados));
+		printf("We are Number %d\n",quantosDados((const char **)dados));
         char *msg_req = "INS_REQ";
       	memcpy(dados[1], msg_req, sizeof(&msg_req));
 		    char buf_to_send[BUFSZ];	   //Uma unica string para enviar
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
       	    memset(buf_to_send, 0, BUFSZ); //Aloca memória
 		    strcat(buf_to_send, "kill");
 		    send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
-		    printf("Killed \n");
+		    printf("Encerrando cliente e servidor \n");
             close(s);
             exit(EXIT_FAILURE);
 
