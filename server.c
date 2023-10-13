@@ -80,14 +80,14 @@ int main(int argc, char **argv) {
     //    while (1){ 
         char caddrstr[BUFSZ];
         addrtostr(caddr, caddrstr, BUFSZ);
-        printf("[log] connection from %s\n", caddrstr);
+        //printf("[log] connection from %s\n", caddrstr);
     //while (1){
         //Agora para receber o dado/ler a mensagem que o cliente enviou
         //Receiving message from client
         char buf[BUFSZ];
         memset(buf, 0, BUFSZ);
         size_t count = recv(csock, buf, BUFSZ - 1, 0);  //Mensagem que chega do cliente
-        printf("Recebido: %d bytes: %s\n", (int)count, buf); //Print a mensagem do cliente
+        printf("%s\n", buf); //Print a mensagem do cliente
 
         //Não mexer acima
         //CODE INIT HERE:
@@ -100,16 +100,16 @@ int main(int argc, char **argv) {
         char *token = strtok(buf, espacoChar);
         int i = 0;
         while (NULL != token) {
-        strcpy(buffer[i], token);
-        token = strtok(NULL, espacoChar);
-        i++;
-      }
-        //int dadosSensor[4];
+            strcpy(buffer[i], token);
+            token = strtok(NULL, espacoChar);
+            i++;
+            }
+        
         for (int i = 1; i < 5; i++) {
         dadosSensor[i - 1] = atoi(buffer[i]);
         }
         //Calcula a potência:
-        int potencia = dadosSensor[1] * dadosSensor[2];
+        //int potencia = dadosSensor[1] * dadosSensor[2];
         //CODE END:
         //CODE INIT:
         int numero = dadosSensor[0];
@@ -151,11 +151,11 @@ int main(int argc, char **argv) {
             }
         }
        
-        printf("Potencia: %d \n", potencia);
-        printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
+        //printf("Potencia: %d \n", potencia);
+        //printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
         
     }   /*---------------------------------REMOVE O SENSOR --------------------------------------------*/
-        if (0 == strncmp(buf, "REM_REQ", 7)) { //REMOVE SENSOR
+    else if (0 == strncmp(buf, "REM_REQ", 7)) { //REMOVE SENSOR
             char buffer[5][BUFSZ];
             memset(statusMensagem, 0, BUFSZ); //Limpa o vetor de status
             //Separa em espaço
@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
 
         }
          /*---------------------------------MUDA INFO DO SENSOR --------------------------------------------*/
-        if (0 == strncmp(buf, "CH_REQ", 7)) { 
+        else if (0 == strncmp(buf, "CH_REQ", 7)) {
             char buffer[5][BUFSZ];
             memset(statusMensagem, 0, BUFSZ);
             //Separa em espaço
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
             }
 
             if (sensorExiste == true){
-                for (int i = 0; i < N_SENSORES; i++) {
+                for (int i = 0; i < N_SENSORES; i++) {  //Muda as infos conforme pedido
                     if (tabelaSensor[i][0] == numero) {
                     tabelaSensor[i][0] = numero;
                     tabelaSensor[i][1] = dadosSensor[1] * dadosSensor[2];
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 
         }
         /*--------------------------------- CONSULTA SENSOR ESPECIFICO --------------------------------------------*/
-        if (0 == strncmp(buf, "SEN_REQ", 7)) {  //EXIBE INFO
+        else if (0 == strncmp(buf, "SEN_REQ", 7)) {  //EXIBE INFO
         char buffer[5][BUFSZ];
         memset(statusMensagem, 0, BUFSZ); //Limpa o vetor de status
          //Separa em espaço
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
 
     }
     /*--------------------------------- IMPRIME VALORES DE TODOS--------------------------------------------*/
-    if (0 == strncmp(buf, "VAL_REQ", 7)) {
+    else if (0 == strncmp(buf, "VAL_REQ", 7)) {
         char buffer[5][BUFSZ];
         memset(statusMensagem, 0, BUFSZ); //Limpa o vetor de status
          //Separa em espaço

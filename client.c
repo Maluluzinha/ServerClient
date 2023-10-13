@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+
 void usage(int argc, char **argv) {
 	printf("usage: %s <server IP> <server port>\n", argv[0]);
 	printf("example: %s 127.0.0.1 51511\n", argv[0]);
@@ -14,6 +15,26 @@ void usage(int argc, char **argv) {
 }
 
 #define BUFSZ 1024
+
+void instalarArquivo(const char *nome_arquivo, char *sensor[20]) {
+    FILE *arquivo = fopen(nome_arquivo, "r");
+
+    if (arquivo == NULL) {
+        printf("Não foi possível abrir o arquivo especificado: %s\n", nome_arquivo);
+        return;
+    }
+
+    char linha[BUFSZ];
+    int linha_atual = 0;
+    while (fgets(linha, BUFSZ, arquivo) != NULL && linha_atual < 5) {
+        linha[strcspn(linha, "\n")] = '\0';
+        strncpy(sensor[linha_atual], linha, BUFSZ - 1);
+        linha_atual++;
+    }
+	printf("successful installation: %s\n", nome_arquivo);
+
+    fclose(arquivo);
+}
 
 char sensor[5][BUFSZ];
 char buf[BUFSZ];
@@ -88,10 +109,15 @@ int main(int argc, char **argv) {
     quebraString(dadosDigitados, dados, 20); //Chama a função para quebrar os dados da string	
 
 	if (dados[0] != NULL) {
-		/*--------------------------------- COMANDO PARA INSTALAR SENSOR --------------------------------------------*/
+		/*--------------------------------- COMANDO PARA INSTALAR SENSOR E ARQUIVO --------------------------------------------*/
         if (strcmp(dados[0], "install") == 0) {
+			 if (strcmp(dados[1], "file") == 0 && dados[2] != NULL) {
+            const char *nome_arquivo = dados[2]; // Obtém o nome do arquivo a partir dos argumentos
 
-			if(quantosDados((const char **)dados) == 6){ //Verifica se está no formato adequado
+            instalarArquivo(nome_arquivo, dados);
+			}
+			
+			else if(quantosDados((const char **)dados) == 6){ //Verifica se está no formato adequado
         		char *msg_req = "INS_REQ";
       			memcpy(dados[1], msg_req, sizeof(&msg_req));
 		    	char buf_to_send[BUFSZ];	   //Uma unica string para enviar
