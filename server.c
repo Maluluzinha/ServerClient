@@ -19,61 +19,6 @@ char statusMensagem[BUFSZ];
 int tabelaSensor[N_SENSORES][DADOS_SENSOR]; //Tabela
 int dadosSensor[4]; //Dados
 
-void adicionarSensor(int dadosSensor[]) {
-    int numero = dadosSensor[0];
-
-    // Verifica se já existe um sensor com o mesmo ID (numero)
-    for (int i = 0; i < N_SENSORES; i++) {
-        if (tabelaSensor[i][0] == numero) {
-            printf("Um sensor com o ID %d já existe na tabela.\n", numero);
-            return; // Não adiciona o sensor se já existe um com o mesmo ID
-        }
-    }
-
-    // Encontra um índice vazio na tabelaSensor e armazena os dados
-    int indiceVazio = -1;
-    for (int i = 0; i < N_SENSORES; i++) {
-        if (tabelaSensor[i][0] == 0) {
-            indiceVazio = i;
-            break;
-        }
-    }
-
-    if (indiceVazio != -1) {
-        tabelaSensor[indiceVazio][0] = numero;
-        tabelaSensor[indiceVazio][1] = dadosSensor[1];
-        tabelaSensor[indiceVazio][2] = dadosSensor[2];
-        tabelaSensor[indiceVazio][3] = dadosSensor[3];
-        printf("Sensor com o ID %d adicionado à tabela.\n", numero);
-    } else {
-        printf("A tabela de sensores está cheia, não é possível adicionar mais sensores.\n");
-    }
-    
-}
-
-// void imprimirSensores() {
-//     for (int i = 0; i < N_SENSORES; i++) {
-//         if (tabelaSensor[i][0] != 0) {
-//             printf("Sensor %d:\n", tabelaSensor[i][0]);
-//             printf("Corrente: %d\n", tabelaSensor[i][1]);
-//             printf("Tensão: %d\n", tabelaSensor[i][2]);
-//             printf("Eficiência: %d\n", tabelaSensor[i][3]);
-//             printf("\n");
-//         }
-//     }
-// }
-
-//Talvez seja util
-
-void limparTabelaSensor() {
-    for (int i = 0; i < N_SENSORES; i++) {
-        for (int j = 0; j < DADOS_SENSOR; j++) {
-            tabelaSensor[i][j] = 0; // Define todos os elementos da matriz para zero
-        }
-    }
-}
-
-
 void usage(int argc, char **argv) {
     printf("usage: %s <v4|v6> <server port>\n", argv[0]);
     printf("example: %s v4 51511\n", argv[0]);
@@ -178,8 +123,7 @@ int main(int argc, char **argv) {
         }
         
         if (sensorExiste == true) {
-            printf("ERROR 04\n");
-            sprintf(statusMensagem, "sensor already exists\n");
+            memcpy(statusMensagem, "ERROR_04", sizeof("ERROR_04"));
             send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
         
         } else {
@@ -190,14 +134,15 @@ int main(int argc, char **argv) {
                 indiceVazio = i;
                 break;
             }
-        }
+        }               
 
         if (indiceVazio != -1) {
             tabelaSensor[indiceVazio][0] = numero; //ID
             tabelaSensor[indiceVazio][1] = dadosSensor[1] * dadosSensor[2]; //Potencia
             tabelaSensor[indiceVazio][2] = dadosSensor[3]; //Eficiência
-            printf("Sensor com o ID %d adicionado à tabela.\n", numero);
-            sprintf(statusMensagem, "successful installation\n");
+            //printf("Sensor com o ID %d adicionado à tabela.\n", numero);
+            //sprintf(statusMensagem, "OK_01\n");
+            memcpy(statusMensagem, "OK_01", sizeof("OK_01"));
             send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
             
         }  else {
@@ -243,14 +188,15 @@ int main(int argc, char **argv) {
                     tabelaSensor[i][0] = 0;
                     tabelaSensor[i][1] = 0;
                     tabelaSensor[i][2] = 0;
-                    printf("Sensor com ID %d foi removido da tabela.\n", numero); //EXCLUIR
-                    sprintf(statusMensagem, "successful removal\n");
+                    //printf("Sensor com ID %d foi removido da tabela.\n", numero); //EXCLUIR
+                    memcpy(statusMensagem, "OK_02", sizeof("OK_02"));
                     send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
-        }
-    }
+                    }
+                }
             }
             else {
-                sprintf(statusMensagem, "sensor not installed\n");
+                //sprintf(statusMensagem, "sensor not installed\n");
+                memcpy(statusMensagem, "ERROR_01", sizeof("ERROR_01"));
                 send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
             }
 
@@ -258,7 +204,7 @@ int main(int argc, char **argv) {
          /*---------------------------------MUDA INFO DO SENSOR --------------------------------------------*/
         if (0 == strncmp(buf, "CH_REQ", 7)) { 
             char buffer[5][BUFSZ];
-            memset(statusMensagem, 0, BUFSZ); //Limpa o vetor de status
+            memset(statusMensagem, 0, BUFSZ);
             //Separa em espaço
             char espacoChar[] = " ";
             char *token = strtok(buf, espacoChar);
@@ -285,22 +231,19 @@ int main(int argc, char **argv) {
 
             if (sensorExiste == true){
                 for (int i = 0; i < N_SENSORES; i++) {
-                    if (tabelaSensor[i][0] == numero) { //Muda os valores do sensor em especifico
+                    if (tabelaSensor[i][0] == numero) {
                     tabelaSensor[i][0] = numero;
                     tabelaSensor[i][1] = dadosSensor[1] * dadosSensor[2];
-                    tabelaSensor[i][2] = dadosSensor[3];
-                    printf("Sensor com ID %d foi modificado.\n", numero); //EXCLUIR
-                    sprintf(statusMensagem, "successful removal\n");
+                    tabelaSensor[i][2] = dadosSensor[3];;
+                    memcpy(statusMensagem, "OK_03", sizeof("OK_03"));
                     send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
                     }
                 }
             }
             else {
-                sprintf(statusMensagem, "sensor not installed\n");
+                memcpy(statusMensagem, "ERROR_01", sizeof("ERROR_01"));
                 send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
             }
-            //printf("Potencia: %d \n", potencia);
-            printf("Números: %d, Corrente: %d, Tensão: %d, Eficiência: %d\n", dadosSensor[0], dadosSensor[1],dadosSensor[2],dadosSensor[3]);
 
         }
         /*--------------------------------- CONSULTA SENSOR ESPECIFICO --------------------------------------------*/
@@ -338,7 +281,8 @@ int main(int argc, char **argv) {
             send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
         }
         else {
-            sprintf(statusMensagem, "sensor not installed\n");
+            //sprintf(statusMensagem, "sensor not installed\n");
+            memcpy(statusMensagem, "ERROR_01", sizeof("ERROR_01"));
             send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
         }
 
@@ -356,18 +300,33 @@ int main(int argc, char **argv) {
         token = strtok(NULL, espacoChar);
         i++;
         }
-        
+
+        int sensoresEncontrados = 0; // Contador de sensores encontrados
+
+        for (int i = 0; i < N_SENSORES; i++) {
+            if (tabelaSensor[i][0] != 0) {
+                sensoresEncontrados++;
+            }
+        }
+
         // Inicializa a mensagem para enviar todos os sensores juntos
         char todos[BUFSZ];
         memset(todos, 0, BUFSZ);
-        
-    for (int i = 0; i < N_SENSORES; i++) {
-        if (tabelaSensor[i][0] != 0) {
-            sprintf(statusMensagem, "sensor %d: (%d %d)", tabelaSensor[i][0],tabelaSensor[i][1], tabelaSensor[i][2]);
-            strcat(todos, statusMensagem);
+        if (sensoresEncontrados > 0) { 
+            for (int i = 0; i < N_SENSORES; i++) {
+                if (tabelaSensor[i][0] != 0) {
+                sprintf(statusMensagem, "sensor %d: (%d %d)", tabelaSensor[i][0],tabelaSensor[i][1], tabelaSensor[i][2]);
+                strcat(todos, statusMensagem);
+            }
         }
-    }
+
             send(csock, todos, strlen(todos) + 1, 0);
+        }   
+        else{
+        memcpy(statusMensagem, "ERROR_02", sizeof("ERROR_02"));
+        send(csock, statusMensagem, strlen(statusMensagem) + 1, 0); // Manda o dado pro cliente
+    }
+
     }
     else if (0 == strncmp(buf, "kill", 7)){
         close(csock);

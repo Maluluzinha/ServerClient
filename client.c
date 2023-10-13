@@ -43,7 +43,6 @@ int quantosDados(const char *dados[]) {
 }
 
 //Pra testar: ./server v4 90900 ./client 127.0.0.1 90900
-//Arg_insreq é argmentos pro insreq, ´5 pq ~sao 5 argumentos na string;
 
 int main(int argc, char **argv) {
 
@@ -67,13 +66,13 @@ int main(int argc, char **argv) {
 		logexit("connect");
 	}
 
-//	while(1){
+	while(1){
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 	printf("connected to %s\n", addrstr);
 	//
 	//CODE INIT:
-	while(1){ //Envia o 01
+	//while(1){ //Envia o 01
 
     char dadosDigitados[BUFSZ]; //Entrada
 	memset(dadosDigitados, 0, BUFSZ); //Aloca memória
@@ -83,11 +82,10 @@ int main(int argc, char **argv) {
     dadosDigitados[strcspn(dadosDigitados, "\n")] = '\0'; // Remover o caractere de nova linha
 
     char *dados[20]; //Limite de 20 palavras
+	char *dadosDoServer[20]; //Limite de 20 palavras
 	memset(dados, 0, BUFSZ); //Limpa os dados para validar o tamanho deles
-    quebraString(dadosDigitados, dados, 20); //Chama a função para quebrar os dados da string
-	int tamanho = quantosDados((const char **)dados); //Tamanho dos dados recebidos
-    printf("We are Number %d\n", tamanho);	//APAGAR DEPOIS
-	
+	memset(dadosDoServer, 0, BUFSZ);
+    quebraString(dadosDigitados, dados, 20); //Chama a função para quebrar os dados da string	
 
 	if (dados[0] != NULL) {
 		/*--------------------------------- COMANDO PARA INSTALAR SENSOR --------------------------------------------*/
@@ -193,7 +191,7 @@ int main(int argc, char **argv) {
 				printf("invalid sensor\n");
 				char buf_to_send[BUFSZ];	//Uma unica string
       	    	memset(buf_to_send, 0, BUFSZ); //Aloca memória
-		    	strcat(buf_to_send, "ERROR 03");
+		    	strcat(buf_to_send, "ERROR_03");
 		    	send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
 
 			}
@@ -218,31 +216,40 @@ int main(int argc, char **argv) {
           close(s);
           exit(EXIT_FAILURE);
 
-	 }
+	 	}
 		
 	}
 
 	char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
-	//printf("mensagem> ");
-	//fgets(buf, BUFSZ-1, stdin);
-	size_t count = send(s, buf, strlen(buf)+1, 0);
-	if (count != strlen(buf)+1) {
-		logexit("send");
-	}
+	recv(s, buf, BUFSZ - 1, 0);
+	buf[strcspn(buf, "\n")] = '\0'; // Remover o caractere de nova linha
+	quebraString(buf, dadosDoServer, 20);
 
-	memset(buf, 0, BUFSZ);
-	unsigned total = 0;
-	while(1) {
-		count = recv(s, buf + total, BUFSZ - total, 0);
-		if (count == 0) {
-			// Connection terminated.
-			break;
+	//Recebe a string e imprime a mensagem
+	if (dadosDoServer[0] != NULL) {
+    	if (strcmp(dadosDoServer[0], "OK_01") == 0) {
+        	printf("successful installation\n");
 		}
-		total += count;
+		if (strcmp(dadosDoServer[0], "OK_02") == 0) {
+        	printf("successful removal\n");
+		}
+		if (strcmp(dadosDoServer[0], "OK_03") == 0) {
+        	printf("successful change\n");
+		}
+		if (strcmp(dadosDoServer[0], "ERROR_01") == 0) {
+        	printf("sensor not installed\n");
+		}
+		if (strcmp(dadosDoServer[0], "ERROR_02") == 0) {
+        	printf("no sensors\n");
+		}
+		if (strcmp(dadosDoServer[0], "ERROR_03") == 0) {
+        	printf("invalid sensor\n");
+		}
+		if (strcmp(dadosDoServer[0], "ERROR_04") == 0) {
+        	printf("sensor already exists\n");
+		}
 	}
-	printf("received %u bytes\n", total);
-	
 	
 	puts(buf);
 	//}
