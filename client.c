@@ -83,50 +83,52 @@ int main(int argc, char **argv) {
     dadosDigitados[strcspn(dadosDigitados, "\n")] = '\0'; // Remover o caractere de nova linha
 
     char *dados[20]; //Limite de 20 palavras
-    quebraString(dadosDigitados, dados, 20);
-    
+	memset(dados, 0, BUFSZ); //Limpa os dados para validar o tamanho deles
+    quebraString(dadosDigitados, dados, 20); //Chama a função para quebrar os dados da string
+	int tamanho = quantosDados((const char **)dados); //Tamanho dos dados recebidos
+    printf("We are Number %d\n", tamanho);	//APAGAR DEPOIS
+	
 
 	if (dados[0] != NULL) {
-		//INSTALAR SENSOR:
+		/*--------------------------------- COMANDO PARA INSTALAR SENSOR --------------------------------------------*/
         if (strcmp(dados[0], "install") == 0) {
-            //printf("Comando 'install' detectado.\n");
-		if(quantosDados((const char **)dados) == 6){
-		//printf("We are Number %d\n",quantosDados((const char **)dados));
-        char *msg_req = "INS_REQ";
-      	memcpy(dados[1], msg_req, sizeof(&msg_req));
-		    char buf_to_send[BUFSZ];	   //Uma unica string para enviar
-      	    memset(buf_to_send, 0, BUFSZ); //Memoria pra string
-		    for (int i = 1; i <= 5; i++) {
-            strcat(buf_to_send, dados[i]);
-            strcat(buf_to_send, " ");
-            }
 
-			size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+			if(quantosDados((const char **)dados) == 6){ //Verifica se está no formato adequado
+        		char *msg_req = "INS_REQ";
+      			memcpy(dados[1], msg_req, sizeof(&msg_req));
+		    	char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	    	memset(buf_to_send, 0, BUFSZ); //Memoria pra string
 
-      		if (count != strlen(buf_to_send) + 1) {
-        		logexit("send");
-      		}
-		    } else{
-				(printf("ERROR 03 \n"));
-				close(s);
-                exit(EXIT_FAILURE);
+		    	for (int i = 1; i <= 5; i++) {
+            		strcat(buf_to_send, dados[i]);
+            		strcat(buf_to_send, " ");
+            	}
+
+				size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+
+      			if (count != strlen(buf_to_send) + 1) {
+        			logexit("send");
+      			}
+
+		    } else {
+
+				printf("invalid sensor\n");
+				char buf_to_send[BUFSZ];	//Uma unica string
+      	    	memset(buf_to_send, 0, BUFSZ); //Aloca memória
+		    	strcat(buf_to_send, "ERROR 03");
+		    	send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+
 			}
 		
-		} else if(strcmp(dados[0], "remove") == 0){	//COMANDO REMOVE
-			char *msg_req = "SEN_REQ";
+		} 
+		/*--------------------------------- COMANDO PARA REMOVER SENSOR --------------------------------------------*/
+		else if(strcmp(dados[0], "remove") == 0){
+			char *msg_req = "REM_REQ";
       		memcpy(dados[0], msg_req, sizeof(&msg_req));
-
-
-
-
-
-		} else if(strcmp(dados[0], "show") == 0){ //COMANDO SHOW
-			char *msg_req = "SEN_REQ";
-      		memcpy(dados[1], msg_req, sizeof(&msg_req));
 
 			char buf_to_send[BUFSZ];	   //Uma unica string para enviar
       	    memset(buf_to_send, 0, BUFSZ); //Memoria pra string
-			for (int i = 1; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
             strcat(buf_to_send, dados[i]);
             strcat(buf_to_send, " ");
             }
@@ -135,10 +137,71 @@ int main(int argc, char **argv) {
         		logexit("send");
       		}
 
-		} else if(strcmp(dados[0], "show") == 0){	 //COMANDO PARA MOSTRAR TODOS
+		}
+		/*--------------------------------- COMANDO PARA MOSTRAR UM SENSOR --------------------------------------------*/ 
+		else if(strcmp(dados[0], "show") == 0){
+			if(strcmp(dados[1], "value") == 0){
+				char *msg_req = "SEN_REQ";
+      			memcpy(dados[1], msg_req, sizeof(&msg_req));
+
+				char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	   		memset(buf_to_send, 0, BUFSZ); //Memoria pra string
+				for (int i = 1; i < 3; i++) {
+            	strcat(buf_to_send, dados[i]);
+            	strcat(buf_to_send, " ");
+            	}
+				size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+				if (count != strlen(buf_to_send) + 1) {
+        			logexit("send");
+      			}
+			}
+		/*--------------------------------- COMANDO PARA PARA MOSTRAR TODOS OS SENSORES --------------------------------*/
+			else if(strcmp(dados[1], "values") == 0){
+
+			char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	    memset(buf_to_send, 0, BUFSZ); //Memoria pra string
+            strcat(buf_to_send, "VAL_REQ");
+			size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+			if (count != strlen(buf_to_send) + 1) {
+        		logexit("send");
+      		}
 			
-			
-		}else if(strcmp(dados[0], "kill") == 0){ //COMANDO KILL
+		}
+		}
+		/*--------------------------------- COMANDO PARA MODIFICAR DADOS --------------------------------------------*/
+		else if(strcmp(dados[0], "change") == 0){
+
+			if(quantosDados((const char **)dados) == 6){ //Verifica se está no formato adequado
+        		char *msg_req = "CH_REQ";
+      			memcpy(dados[1], msg_req, sizeof(&msg_req));
+		    	char buf_to_send[BUFSZ];	   //Uma unica string para enviar
+      	    	memset(buf_to_send, 0, BUFSZ); //Memoria pra string
+
+		    	for (int i = 1; i <= 5; i++) {
+            		strcat(buf_to_send, dados[i]);
+            		strcat(buf_to_send, " ");
+            	}
+
+				size_t count = send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+
+      			if (count != strlen(buf_to_send) + 1) {
+        			logexit("send");
+      			}
+
+		    } else {
+
+				printf("invalid sensor\n");
+				char buf_to_send[BUFSZ];	//Uma unica string
+      	    	memset(buf_to_send, 0, BUFSZ); //Aloca memória
+		    	strcat(buf_to_send, "ERROR 03");
+		    	send(s, buf_to_send, strlen(buf_to_send) + 1, 0);
+
+			}
+
+		}
+		/*----------------------------------------- COMANDO KILL --------------------------------------------------*/
+		else if(strcmp(dados[0], "kill") == 0){ //COMANDO KILL
+
 			char buf_to_send[BUFSZ];	//Uma unica string
       	    memset(buf_to_send, 0, BUFSZ); //Aloca memória
 		    strcat(buf_to_send, "kill");
@@ -147,19 +210,17 @@ int main(int argc, char **argv) {
             close(s);
             exit(EXIT_FAILURE);
 
-		} else {
+		} 
+		/*----------------------------------------- COMANDO INVÁLIDO --------------------------------------------------*/
+		else {
+
 		  printf("Invalid command \n");
-		  
           close(s);
           exit(EXIT_FAILURE);
+
 	 }
 		
 	}
-
-
-	 
-
-
 
 	char buf[BUFSZ];
 	memset(buf, 0, BUFSZ);
@@ -185,7 +246,7 @@ int main(int argc, char **argv) {
 	
 	puts(buf);
 	//}
-	close(s);
+	//close(s);
 	exit(EXIT_SUCCESS);
 	}
 }
